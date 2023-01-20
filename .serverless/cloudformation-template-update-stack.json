@@ -161,7 +161,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/veracode-github-app/dev/1674173705823-2023-01-20T00:15:05.823Z/veracode-github-app.zip"
+          "S3Key": "serverless/veracode-github-app/dev/1674174390881-2023-01-20T00:26:30.881Z/veracode-github-app.zip"
         },
         "Handler": "src/lambda/handler.webhooks",
         "Runtime": "nodejs16.x",
@@ -187,14 +187,14 @@
         "WebhooksLogGroup"
       ]
     },
-    "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw": {
+    "WebhooksLambdaVersionxDJIDHb9kITDmQkjVXhlFKPudkIBXlIipgJMGF3GM": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "WebhooksLambdaFunction"
         },
-        "CodeSha256": "EuRFCg6FJGGUCzpwRogxKhX/JX/ufSn29AgJyr4gpNs="
+        "CodeSha256": "FmNd4yPJceoJYfE2qJhxAVLzQiiDSxBZ3FRHqVK2WAs="
       }
     },
     "HttpApi": {
@@ -305,7 +305,7 @@
     "WebhooksLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw"
+        "Ref": "WebhooksLambdaVersionxDJIDHb9kITDmQkjVXhlFKPudkIBXlIipgJMGF3GM"
       },
       "Export": {
         "Name": "sls-veracode-github-app-dev-WebhooksLambdaFunctionQualifiedArn"

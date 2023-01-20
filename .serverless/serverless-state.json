@@ -179,7 +179,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/veracode-github-app/dev/1674173705823-2023-01-20T00:15:05.823Z/veracode-github-app.zip"
+                "S3Key": "serverless/veracode-github-app/dev/1674174390881-2023-01-20T00:26:30.881Z/veracode-github-app.zip"
               },
               "Handler": "src/lambda/handler.webhooks",
               "Runtime": "nodejs16.x",
@@ -205,14 +205,14 @@
               "WebhooksLogGroup"
             ]
           },
-          "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw": {
+          "WebhooksLambdaVersionxDJIDHb9kITDmQkjVXhlFKPudkIBXlIipgJMGF3GM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "WebhooksLambdaFunction"
               },
-              "CodeSha256": "EuRFCg6FJGGUCzpwRogxKhX/JX/ufSn29AgJyr4gpNs="
+              "CodeSha256": "FmNd4yPJceoJYfE2qJhxAVLzQiiDSxBZ3FRHqVK2WAs="
             }
           },
           "HttpApi": {
@@ -320,7 +320,7 @@
           "WebhooksLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw"
+              "Ref": "WebhooksLambdaVersionxDJIDHb9kITDmQkjVXhlFKPudkIBXlIipgJMGF3GM"
             },
             "Export": {
               "Name": "sls-veracode-github-app-dev-WebhooksLambdaFunctionQualifiedArn"
@@ -470,7 +470,7 @@
         "memory": 256,
         "runtime": "nodejs16.x",
         "vpc": {},
-        "versionLogicalId": "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw"
+        "versionLogicalId": "WebhooksLambdaVersionxDJIDHb9kITDmQkjVXhlFKPudkIBXlIipgJMGF3GM"
       }
     },
     "configValidationMode": "warn",
@@ -492,7 +492,7 @@
     "artifact": "/Users/vdeng/coding-projects/veracode-github-app-repos/veracode-github-app-lambda/.serverless/veracode-github-app.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/veracode-github-app/dev/1674173705823-2023-01-20T00:15:05.823Z",
+    "artifactDirectoryName": "serverless/veracode-github-app/dev/1674174390881-2023-01-20T00:26:30.881Z",
     "artifact": "veracode-github-app.zip"
   }
 }
