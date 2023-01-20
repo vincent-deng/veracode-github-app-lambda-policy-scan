@@ -1,0 +1,349 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "WebhooksLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/veracode-github-app-dev-webhooks"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "veracode-github-app",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/veracode-github-app-dev*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/veracode-github-app-dev*:*:*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "veracode-github-app",
+              "dev",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "WebhooksLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/veracode-github-app/dev/1674173705823-2023-01-20T00:15:05.823Z/veracode-github-app.zip"
+        },
+        "Handler": "src/lambda/handler.webhooks",
+        "Runtime": "nodejs16.x",
+        "FunctionName": "veracode-github-app-dev-webhooks",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Environment": {
+          "Variables": {
+            "APP_ID": "283776",
+            "PRIVATE_KEY": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBdFAzRTUzTjd3enpVSm9qdnVXNW1PVCs3MUx0NldsV2VMU1BVRndKdjE2cXVjbFFTCmZ4UTdsckllQ0hPTitLa3dBVEdBVUVkdkRYbXdBaVdnRWdLZXl5ME8rSGFFTE01Y1FhOG0wTEY1SnBOcmZXc3IKT1dMSDZXVjdOVEYrNkdvZm5qeFNaWnNtNk5hY0pGcXN1aC9PdkhkYjhndVJvNXg2bUxBZlovOHRSRGNVbWpBWApPbzVOMFhwSUNpOEJUQ1VYOG1jNWg3VGtWQ2gya2VWdFovY3c1VExNQTZTUlk0ZXhTMGtuV0hRL2VJckhudkU2Cjc5anBNRzNNNUU3VWp5U0FuSFZPZm01ZmhQSEJyc0NBckpkY3FKOE5GeGZ3K1NTRlBxdDRnZStSeENCK29NYW0KRmtrT204Q3B5RmZ2aEZrdlhKVTFNK0tydXdUNVl0STlaSU1yZXdJREFRQUJBb0lCQUdlVnBZL2hwRCtGSE5aQgpJUkk3Z1AzYTRDRk1leVlnUWpzTGVtTUEzZ25NZ2JLbE0wRFB6NXJicmh5Z0plemV4NzZuR2d6WUZWTGRCa0wwClRieUJDMmkxRFJCZXBCOFFxL1JiemhjNnUxKzhsNVJjTll6T1lDUFFGTWZJNEIwY1A2Uk1XY3dWRkJ2R1YrN20KaGx5dnY1NVZvYVhSd1RTbVpmUGxPTlJJVXh2cWc0UUdoRFFqOGVrRHVKME5wUTZTYVdNVVA1UU9KQ3lMUjFVYgp6ZDc0TWllUkxFNDFQY0o3YmhwZTBDUmwvM1QzMXM3QWo5aGRkWFowbGEwYStqRktHVE5MRVVQbVdhWVZ6SlNUCm9FMFM4RVI4cktBZ3pNby9Ja2k3Y2hPbGErMzZMNWx3UTA0VElHTndHaDdkeExIaDh2L0FKc1BkK3dONERqSEQKRTNaNkx1RUNnWUVBNHFyZm5nQ0NIOXR0NGNuQ3lpWDVobEdJNEdVcytIUDJnUitrOUxXUHFWN29OUS9XSTNrbQpyb2hsSUpSdGVmem42UThtY1g2ZkQyQ2JMUkk2MlZ5TTBsZThERWZmbllPeFhrRFZCR3cyWCtiZFplcHp0Z0c2CmlVM1RibVJGUDRkelFoUjdSK09xbVo2YVN5Y21MRjQ2WWpwbENVTSttTTdIUmxWNDY5OEVWRjhDZ1lFQXpHbTMKcTA0L3lwdFlDZmd5VXIrdnU0Wm5Jbk1BaVBKTW9lNHRIMFNJSG5INzc5SWlSVDA2bURHZDM1Z3FyRXFVMXBsMgpBQUttRHhPS3kzMk0yTXYzZGwvRzU3N0RvUVhDaW1ZVlJ1YWVicS9zTGgzeHBqWHU5b0pEZ1BadiszT2xhdTlKCng0a2xZMk8rTzgwRFU1bWN0Tzd6UmdvYmhkSjVzZ0NYT25nTlhtVUNnWUVBeEl6QlhhUTVNZUMzMXN0Nndvbk4KWnNDNi9VSWVqYzhZbVAxVXIvSGtna3pPOUh3b0J4aWVCMGcwME55RVZmeU5LTlkvVXJrbXVsSGVIV1lxYTZOSwpaWGM0bERtYTJWNkI1aVkzMFI3NHc0NVF1M2hqSUJjOXBxUTZ6QVhjMm1yYzhoY0trOXNDYXpWUnZBdFZtYkdYCjFPZW9CekV0VFpvNHlHK0RiSjAxaHVjQ2dZQk8rd0gyZEpOOVN5eG5IYmtEOUFDSWFsUHJJWmd4VWIxK1M3S3YKaENFNzhqcXYzUGRVM1dXSWJKTmRVMFFac2U5MFEzTXVhZGVUdDY5SEZNbVk4cVk0M0tUVDRnZGdiZ05PeWthcQpVRzBpdzJKMEp5bTVXTmx0OGNMM1QwRFJYVXVxMTY0Z0pNT0hkWUNKUnB0a2I5UDJyT1RlU1FWOVhXZWIrVkoxClN2R1BhUUtCZ1FEZDhReEkwVEZ6bzh4RitMZmpBUjNOckpJODFZWG9kbER6SFIzMmdSVDR6cjg0NVY3eWcvWHAKK1ZMV1pXVFUwUXE3ZnFMdXRlRGNwK1d5YW1Jd2JJbVRvY0tHd0VFQ0xkOG14WVFCNDQzdkd5WG0yUEhKbWRtYgpNYkhZR2lPOThsQXNPTFZmT1dOeUJ1VUM3K05PUmNacEZZM0wrS2g0RENZbFBzRjNmb05nOHc9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=",
+            "WEBHOOK_SECRET": "development",
+            "NODE_ENV": "production"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "WebhooksLogGroup"
+      ]
+    },
+    "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "WebhooksLambdaFunction"
+        },
+        "CodeSha256": "EuRFCg6FJGGUCzpwRogxKhX/JX/ufSn29AgJyr4gpNs="
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "dev-veracode-github-app",
+        "ProtocolType": "HTTP"
+      }
+    },
+    "HttpApiStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true,
+        "DefaultRouteSettings": {
+          "DetailedMetricsEnabled": false
+        }
+      }
+    },
+    "WebhooksLambdaPermissionHttpApi": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "WebhooksLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "HttpApi"
+              },
+              "/*"
+            ]
+          ]
+        }
+      }
+    },
+    "HttpApiIntegrationWebhooks": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "WebhooksLambdaFunction",
+            "Arn"
+          ]
+        },
+        "PayloadFormatVersion": "2.0",
+        "TimeoutInMillis": 30000
+      }
+    },
+    "HttpApiRoutePostApiGithubWebhooks": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "RouteKey": "POST /api/github/webhooks",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "HttpApiIntegrationWebhooks"
+              }
+            ]
+          ]
+        }
+      },
+      "DependsOn": "HttpApiIntegrationWebhooks"
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-veracode-github-app-dev-ServerlessDeploymentBucketName"
+      }
+    },
+    "WebhooksLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "WebhooksLambdaVersionqWTml8rolnJEb5oeDtHOqX5O1evgLC68gsIcG2Cpjw"
+      },
+      "Export": {
+        "Name": "sls-veracode-github-app-dev-WebhooksLambdaFunctionQualifiedArn"
+      }
+    },
+    "HttpApiId": {
+      "Description": "Id of the HTTP API",
+      "Value": {
+        "Ref": "HttpApi"
+      },
+      "Export": {
+        "Name": "sls-veracode-github-app-dev-HttpApiId"
+      }
+    },
+    "HttpApiUrl": {
+      "Description": "URL of the HTTP API",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "HttpApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            }
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "sls-veracode-github-app-dev-HttpApiUrl"
+      }
+    }
+  }
+}

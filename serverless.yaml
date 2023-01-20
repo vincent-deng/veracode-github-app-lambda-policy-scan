@@ -1,0 +1,24 @@
+service: veracode-github-app
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ${opt:region, self:custom.defaultRegion}
+  environment:
+    APP_ID: ${ssm:APP_ID}
+    PRIVATE_KEY: ${ssm:PRIVATE_KEY}
+    WEBHOOK_SECRET: ${ssm:WEBHOOK_SECRET}
+    NODE_ENV: production
+
+custom:
+  defaultRegion: ap-southeast-2
+
+functions:
+  webhooks:
+    handler: 'src/lambda/handler.webhooks'
+    memorySize: 256
+    timeout: 15
+    events:
+      - httpApi:
+          path: /api/github/webhooks
+          method: post
